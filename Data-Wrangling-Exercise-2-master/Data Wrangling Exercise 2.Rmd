@@ -1,0 +1,52 @@
+---
+title: "Data Wrangling Exercise 2"
+output: html_document
+---
+
+## Add R Packages
+```{r}
+library("dplyr", lib.loc="/Library/Frameworks/R.framework/Versions/3.4/Resources/library")
+library("tidyr", lib.loc="/Library/Frameworks/R.framework/Versions/3.4/Resources/library")
+library("readr", lib.loc="/Library/Frameworks/R.framework/Versions/3.4/Resources/library")
+```
+
+## Import Data
+```{r}
+library(readr)
+titanic_original <- read_csv("~/Desktop/titanic_original.csv")
+View(titanic_original)
+```
+
+## Port of Embarkation
+```{r}
+is.na(titanic_original$embarked)
+titanic_original$embarked <- gsub("NA", "S", titanic_original$embarked)
+```
+
+## Age - Performing mean age as per the instructions but also evaluating how median age might provide a different replacement value
+```{r}
+mean_age <- mean(titanic_original$age, na.rm = TRUE)
+median_age <- median(titanic_original$age, na.rm = TRUE)
+mean_age
+median_age
+titanic_original$age <- replace(titanic_original$age, is.na(titanic_original$age), mean_age)
+```
+## Note that median age is slightly lower but not dramatically different as a replacement value.
+
+## Lifeboat
+```{r}
+na_boat <- which(is.na(titanic_original$boat))
+titanic_original$boat[na_boat] <- "None"
+
+```
+## Cabin
+## It does not make sense to fill in an inaccurate identifier for cabin. A missing value may mean steerage class, crew, etc.
+```{r}
+titanic_original$has_cabin_number <- as.numeric(!(is.na(titanic_original$cabin)))
+```
+## Write CSV of new file
+```{r}
+write.csv(titanic_original, file = "~/Desktop/titanic_clean.csv")
+```
+
+
