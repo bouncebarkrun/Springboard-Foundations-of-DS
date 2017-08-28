@@ -1,0 +1,66 @@
+---
+title: "Data Wrangling 1"
+output: html_document
+---
+
+
+## Add R Packages
+```{r}
+library("dplyr", lib.loc="/Library/Frameworks/R.framework/Versions/3.4/Resources/library")
+library("tidyr", lib.loc="/Library/Frameworks/R.framework/Versions/3.4/Resources/library")
+```
+
+
+## Import Data
+```{r}
+library(readr)
+refine_original <- read_csv("~/Desktop/refine_original.csv")
+View(refine_original)
+```
+
+
+## Clean up brand names
+```{r}
+refine_original$company <- gsub("^[p|f].*", "Philips", refine_original$company, ignore.case = TRUE)
+refine_original$company <- gsub("^a.*", "Akzo", refine_original$company, ignore.case = TRUE)
+refine_original$company <- gsub("^v.*", "Van Houten", refine_original$company, ignore.case = TRUE)
+refine_original$company <- gsub("^u.*", "Unilever", refine_original$company, ignore.case = TRUE)
+```
+
+
+## Separate product code and number
+```{r}
+refine_original <- separate(refine_original, "Product code / number", c("product_code", "product_number"), sep = "-")
+```
+
+## Add product categories
+```{r}
+refine_original <- mutate(refine_original, product_cat=product_code)
+refine_original$product_cat <- gsub("p", "Smartphone", refine_original$product_cat)
+refine_original$product_cat <- gsub("v", "TV", refine_original$product_cat)
+refine_original$product_cat <- gsub("x", "Laptop", refine_original$product_cat)
+refine_original$product_cat <- gsub("q", "Tablet", refine_original$product_cat)
+```
+
+## Add full address for geocoding
+```{r}
+refine_original <- unite(refine_original, "full_address", c(address, city, country) , sep = ", ")
+```
+
+## Create dummy variables for company and product category
+```{r}
+refine_original <- mutate(refine_original, company_Philips = as.numeric(refine_original$company == "Philips"))
+refine_original <- mutate(refine_original, company_Akzo = as.numeric(refine_original$company == "Akzo"))
+refine_original <- mutate(refine_original, company_Unilever = as.numeric(refine_original$company == "Unilever"))
+refine_original <- mutate(refine_original, company_VanHouten = as.numeric(refine_original$company == "Van Houten"))
+refine_original <- mutate(refine_original, product_smartphone = as.numeric(refine_original$product_code == "Smartphone"))
+refine_original <- mutate(refine_original, product_tv = as.numeric(refine_original$product_code == "TV"))
+refine_original <- mutate(refine_original, product_laptop = as.numeric(refine_original$product_code == "Laptop"))
+refine_original <- mutate(refine_original, product_tablet = as.numeric(refine_original$product_code == "Tablet"))
+```
+
+## Write CSV of new file
+```{r}
+write.csv(refine_original, file = "~/Desktop/refine_clean.csv")
+```
+
